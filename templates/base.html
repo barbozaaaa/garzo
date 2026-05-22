@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#5c3317">
+  <title>Ateliê Haiti{% if title %} · {{ title }}{% endif %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:          #f5ede0;
+      --card:        #fffdf7;
+      --primary:     #7c3d12;
+      --primary-dk:  #5c2d0e;
+      --accent:      #c17f24;
+      --accent-lt:   #fde9c2;
+      --border:      #d9c3a5;
+      --border-dk:   #b89b78;
+      --text:        #2c1a0e;
+      --muted:       #8b6f55;
+      --success:     #3a6b47;
+      --danger:      #8b1a1a;
+      --danger-lt:   #fde8e8;
+    }
+
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(193,127,36,.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(124,61,18,.07) 0%, transparent 60%);
+      min-height: 100vh;
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+    }
+
+    input, select, textarea, button { font-family: inherit; font-size: 16px !important; }
+
+    /* ── Tipografia ─────────────────────────────────────────────────────── */
+    .font-serif { font-family: 'Playfair Display', serif; }
+    .font-crimson { font-family: 'Crimson Text', serif; }
+
+    /* ── Cartão vintage ─────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(92,45,14,.08), 0 1px 2px rgba(92,45,14,.04);
+    }
+    .card-ornament {
+      border-top: 3px solid var(--primary);
+      border-radius: 16px 16px 14px 14px;
+    }
+
+    /* ── Botões ─────────────────────────────────────────────────────────── */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
+      color: #fef9f0;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 17px !important;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(92,45,14,.25);
+      transition: transform .15s, box-shadow .15s;
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      min-height: 52px;
+    }
+    .btn-primary:active { transform: scale(.97); box-shadow: 0 1px 4px rgba(92,45,14,.2); }
+
+    .btn-secondary {
+      background: var(--accent-lt);
+      color: var(--primary);
+      border: 1.5px solid var(--accent);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+      text-align: center;
+      text-decoration: none;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-secondary:active { background: #f9d89a; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Inputs ─────────────────────────────────────────────────────────── */
+    .input-vintage {
+      width: 100%;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    .input-vintage:focus { border-color: var(--primary); }
+    .input-vintage::placeholder { color: var(--muted); opacity: .7; }
+
+    /* ── Tags de categoria ──────────────────────────────────────────────── */
+    .tag {
+      display: inline-block;
+      font-family: 'Crimson Text', serif;
+      font-size: 13px;
+      padding: 2px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-dk);
+      background: var(--accent-lt);
+      color: var(--primary);
+      font-style: italic;
+    }
+
+    /* ── Badge de status ────────────────────────────────────────────────── */
+    .badge-ok      { background:#d4edda; color:#1a5c32; border:1px solid #a3cfbb; }
+    .badge-low     { background:var(--danger-lt); color:var(--danger); border:1px solid #f3b4b4; }
+    .badge-warn    { background:#fff3cd; color:#7a5c00; border:1px solid #ffe08a; }
+
+    /* ── Separador ornamental ───────────────────────────────────────────── */
+    .ornament {
+      text-align: center;
+      color: var(--border-dk);
+      font-size: 18px;
+      letter-spacing: 6px;
+      margin: 4px 0;
+    }
+
+    /* ── Flash ──────────────────────────────────────────────────────────── */
+    #flash-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+    .flash-msg {
+      background: var(--success);
+      color: #fff;
+      text-align: center;
+      padding: 14px 16px;
+      font-weight: 700;
+      font-size: 16px;
+      font-family: 'Crimson Text', serif;
+      letter-spacing: .3px;
+    }
+  </style>
+</head>
+<body>
+
+  {# ── Flash ───────────────────────────────────────────────────────────── #}
+  {% with msgs = get_flashed_messages() %}{% if msgs %}
+  <div id="flash-bar">
+    {% for m in msgs %}<div class="flash-msg">{{ m }}</div>{% endfor %}
+  </div>
+  <script>setTimeout(()=>{const b=document.getElementById('flash-bar');if(b)b.style.transform='translateY(-100%)';b.style.transition='transform .4s'},3000);</script>
+  {% endif %}{% endwith %}
+
+  {# ── Cabeçalho ───────────────────────────────────────────────────────── #}
+  <header style="background:linear-gradient(135deg,var(--primary-dk) 0%,var(--primary) 100%);
+                 color:#fef9f0; padding:16px; position:sticky; top:0; z-index:40;
+                 box-shadow:0 3px 12px rgba(92,45,14,.3);">
+    <div style="max-width:520px; margin:0 auto; display:flex; align-items:center; gap:12px;">
+      {% if back_url %}
+      <a href="{{ back_url }}" style="color:#fde9c2; font-size:22px; font-weight:700; text-decoration:none; line-height:1;">←</a>
+      {% endif %}
+      <div>
+        {% if not back_url %}
+        <p class="font-serif" style="font-size:22px; font-weight:700; letter-spacing:.5px; line-height:1.2;">
+          ✂️ Ateliê Haiti
+        </p>
+        <p class="font-crimson" style="font-size:14px; color:#fde9c2; font-style:italic; margin-top:1px;">
+          Gestão Artesanal
+        </p>
+        {% else %}
+        <p class="font-serif" style="font-size:20px; font-weight:700; line-height:1.2;">{{ title }}</p>
+        {% if subtitle %}
+        <p class="font-crimson" style="font-size:13px; color:#fde9c2; font-style:italic;">{{ subtitle }}</p>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {# ── Conteúdo ────────────────────────────────────────────────────────── #}
+  <main style="max-width:520px; margin:0 auto; padding:16px 16px 60px;">
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

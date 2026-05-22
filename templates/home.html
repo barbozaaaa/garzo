@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div style="text-align:center; padding:20px 0 10px;">
+  <p class="font-crimson" style="color:var(--muted); font-style:italic; font-size:17px;">
+    "O que vamos fazer hoje?"
+  </p>
+  <div class="ornament" style="margin-top:6px;">· · ·</div>
+</div>
+
+{% set menu = [
+  ('estoque',   '📦', 'Ver Estoque',            'Veja tudo que tem no ateliê'),
+  ('adicionar', '➕', 'Adicionar Material',      'Registrar compra de material'),
+  ('baixa',     '✂️', 'Dar Baixa em Material',  'Registrar uso na produção'),
+  ('produtos',  '👜', 'Ver Produtos Prontos',    'Quantas bolsas posso fazer?'),
+  ('alertas',   '📊', 'Alertas e Relatórios',    'Gráficos e avisos de estoque'),
+] %}
+
+<div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+{% for rota, emoji, titulo, sub in menu %}
+{% set is_alerta = rota == 'alertas' %}
+<a href="{{ url_for(rota) }}"
+   style="display:flex; align-items:center; gap:16px; padding:18px;
+          text-decoration:none; color:var(--text);
+          {% if is_alerta and n_alertas > 0 %}
+          background:#fff5f5; border:2px solid #e8a0a0;
+          {% else %}
+          background:var(--card); border:1.5px solid var(--border);
+          {% endif %}
+          border-radius:16px;
+          box-shadow:0 2px 8px rgba(92,45,14,.08);
+          border-top:3px solid {% if is_alerta and n_alertas > 0 %}#c0392b{% else %}var(--primary){% endif %};">
+
+  <span style="font-size:38px; line-height:1; min-width:44px; text-align:center;">{{ emoji }}</span>
+
+  <div style="flex:1; min-width:0;">
+    <p class="font-serif" style="font-size:19px; font-weight:700; color:var(--text); line-height:1.2;">
+      {{ titulo }}
+    </p>
+    <p class="font-crimson" style="font-size:14px; color:var(--muted); font-style:italic; margin-top:3px;">
+      {% if is_alerta and n_alertas > 0 %}
+        <span style="color:#c0392b; font-style:normal; font-weight:600;">{{ n_alertas }} material(is) acabando!</span>
+      {% else %}
+        {{ sub }}
+      {% endif %}
+    </p>
+  </div>
+
+  {% if is_alerta and n_alertas > 0 %}
+  <span style="background:#c0392b; color:#fff; border-radius:50%; width:34px; height:34px;
+               display:flex; align-items:center; justify-content:center;
+               font-weight:700; font-size:16px; flex-shrink:0;">{{ n_alertas }}</span>
+  {% else %}
+  <span style="color:var(--border-dk); font-size:20px;">›</span>
+  {% endif %}
+</a>
+{% endfor %}
+</div>
+
+<div class="ornament" style="margin-top:28px;">✦ ✦ ✦</div>
+<p class="font-crimson" style="text-align:center; color:var(--muted); font-style:italic; font-size:13px; margin-top:6px;">
+  Conectados pela Comunidade · Favela do Haiti, SP
+</p>
+
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% set title = 'Estoque' %}
+{% set back_url = url_for('home') %}
+{% set subtitle = materiais|length ~ ' item(s)' %}
+
+{% block content %}
+
+{# ── Busca ────────────────────────────────────────────────────────────── #}
+<form method="get" style="margin-bottom:12px;">
+  <input type="hidden" name="cat" value="{{ categoria_ativa }}">
+  <input name="q" value="{{ busca }}" placeholder="🔍  Buscar material..."
+    class="input-vintage" style="font-size:16px !important;">
+</form>
+
+{# ── Filtro ───────────────────────────────────────────────────────────── #}
+<div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px;">
+  {% for cat in ['Todos'] + categorias %}
+  <a href="?cat={{ cat }}&q={{ busca }}"
+     style="padding:7px 16px; border-radius:20px; white-space:nowrap;
+            font-size:14px; font-weight:700; text-decoration:none; flex-shrink:0;
+            font-family:'Crimson Text',serif; font-style:italic;
+            {% if categoria_ativa == cat %}
+            background:var(--primary); color:#fef9f0; border:1.5px solid var(--primary);
+            {% else %}
+            background:var(--card); color:var(--muted); border:1.5px solid var(--border);
+            {% endif %}">
+    {{ cat }}
+  </a>
+  {% endfor %}
+</div>
+
+{# ── Lista ────────────────────────────────────────────────────────────── #}
+{% if not materiais %}
+<div style="text-align:center; padding:48px 16px; color:var(--muted);">
+  <p style="font-size:48px;">📭</p>
+  <p class="font-crimson" style="font-size:18px; font-style:italic; margin-top:8px;">Nenhum material aqui.</p>
+  <a href="{{ url_for('adicionar') }}" class="btn-primary" style="margin-top:20px; max-width:240px; margin-left:auto; margin-right:auto;">
+    + Adicionar material
+  </a>
+</div>
+{% endif %}
+
+{% for m in materiais %}
+{% set baixo = m.quantidade_atual <= m.quantidade_minima %}
+<div class="card card-ornament" style="margin-bottom:14px; overflow:hidden;
+     border-top-color: {% if baixo %}var(--danger){% else %}var(--accent){% endif %};">
+
+  <div style="padding:14px 16px;">
+    <div style="display:flex; gap:14px; align-items:flex-start;">
+
+      {# Foto / ícone #}
+      <div style="width:72px; height:72px; border-radius:12px; overflow:hidden;
+                  background:var(--accent-lt); border:1.5px solid var(--border);
+                  display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        {% if m.foto %}
+        <img src="{{ url_for('static', filename='uploads/' ~ m.foto) }}"
+             alt="{{ m.nome }}" style="width:100%; height:100%; object-fit:cover;">
+        {% else %}
+        <span style="font-size:30px;">
+          {% if m.categoria == 'Courino' %}🟫
+          {% elif m.categoria == 'Metal' %}⚙️
+          {% elif m.categoria == 'Aviamento' %}🧵
+          {% elif m.categoria == 'Tecido' %}🧶
+          {% elif m.categoria == 'Embalagem' %}📦
+          {% else %}🔹{% endif %}
+        </span>
+        {% endif %}
+      </div>
+
+      {# Info #}
+      <div style="flex:1; min-width:0;">
+        <p class="font-serif" style="font-size:17px; font-weight:700; color:var(--text); line-height:1.2;">
+          {{ m.nome }}
+        </p>
+        <span class="tag" style="margin-top:4px; display:inline-block;">{{ m.categoria }}</span>
+
+        {% if baixo %}
+        <p style="color:var(--danger); font-weight:700; font-size:13px; margin-top:6px;">
+          ⚠️ Estoque baixo — mínimo: {{ m.quantidade_minima }} {{ m.unidade }}
+        </p>
+        {% endif %}
+        {% if m.custo_unitario %}
+        <p class="font-crimson" style="color:var(--muted); font-style:italic; font-size:13px; margin-top:3px;">
+          R$ {{ '%.2f'|format(m.custo_unitario) }} / {{ m.unidade }}
+        </p>
+        {% endif %}
+      </div>
+
+      {# Quantidade #}
+      <div style="text-align:right; flex-shrink:0;">
+        <p style="font-size:26px; font-weight:800;
+                  color:{% if baixo %}var(--danger){% else %}var(--success){% endif %}; line-height:1;">
+          {{ m.quantidade_atual }}
+        </p>
+        <p class="font-crimson" style="font-size:13px; color:var(--muted); font-style:italic;">
+          {{ m.unidade }}
+        </p>
+      </div>
+    </div>
+
+    {# Ações #}
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button onclick="document.getElementById('entrada-{{ m.id }}').style.display =
+                       document.getElementById('entrada-{{ m.id }}').style.display === 'none' ? 'block' : 'none'"
+        class="btn-secondary" style="flex:1; font-size:14px !important;">
+        + Adicionar mais
+      </button>
+      <a href="{{ url_for('baixa') }}?mid={{ m.id }}" class="btn-ghost" style="flex:1; font-size:14px !important;">
+        ✂️ Dar baixa
+      </a>
+      <form method="post" action="{{ url_for('excluir_material', mid=m.id) }}"
+            onsubmit="return confirm('Remover {{ m.nome }}?')">
+        <button class="btn-ghost" style="padding:10px 12px;">🗑️</button>
+      </form>
+    </div>
+
+    {# Form inline de entrada #}
+    <div id="entrada-{{ m.id }}" style="display:none; margin-top:12px;
+         background:var(--accent-lt); border:1.5px solid var(--accent);
+         border-radius:12px; padding:14px;">
+      <form method="post" action="{{ url_for('entrada', mid=m.id) }}">
+        <p class="font-crimson" style="font-style:italic; color:var(--primary); margin-bottom:8px; font-size:15px;">
+          Quantas {{ m.unidade }} estão entrando?
+        </p>
+        <div style="display:flex; gap:8px;">
+          <input name="quantidade" type="number" min="0.1" step="0.1" placeholder="Quantidade"
+            class="input-vintage" style="flex:1;">
+          <input name="motivo" placeholder="Motivo" class="input-vintage" style="flex:1;">
+        </div>
+        <button class="btn-primary" style="margin-top:10px; font-size:15px !important;">
+          ✅ Confirmar entrada
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{# ── FAB ──────────────────────────────────────────────────────────────── #}
+<a href="{{ url_for('adicionar') }}"
+   style="position:fixed; bottom:24px; right:20px;
+          width:60px; height:60px; border-radius:50%;
+          background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dk) 100%);
+          color:#fef9f0; font-size:28px; font-weight:700;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:0 4px 16px rgba(92,45,14,.35);
+          text-decoration:none; z-index:40;">
+  +
+</a>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% set title = 'Novo Produto' %}
+{% set back_url = url_for('produtos') %}
+{% set subtitle = 'Cadastrar produto e sua receita' %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+
+  <div class="ornament" style="margin:8px 0 16px;">· · ·</div>
+
+  <div style="margin-bottom:18px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:8px; font-size:14px;">
+      👜 NOME DO PRODUTO *
+    </label>
+    <input name="nome" required placeholder="Ex: Bolsa Tote Clássica"
+      class="input-vintage" style="font-size:18px !important; font-family:'Playfair Display',serif;">
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+    <div>
+      <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:8px; font-size:14px;">
+        💰 PREÇO (R$)
+      </label>
+      <input name="preco_venda" type="number" min="0" step="0.01" placeholder="150,00"
+        class="input-vintage" style="text-align:center; font-size:20px !important; font-weight:700;">
+    </div>
+    <div>
+      <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:8px; font-size:14px;">
+        📷 FOTO
+      </label>
+      <label style="display:flex; flex-direction:column; align-items:center; justify-content:center;
+                    height:56px; border:2px dashed var(--border-dk); border-radius:12px;
+                    background:var(--card); cursor:pointer;">
+        <span id="ficon">📷</span>
+        <input type="file" name="foto" accept="image/*" style="display:none;"
+               onchange="document.getElementById('ficon').textContent='✅';">
+      </label>
+    </div>
+  </div>
+
+  {# Receita #}
+  <div style="margin-bottom:24px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:14px;">
+      📋 RECEITA DE MATERIAIS
+    </label>
+    <p class="font-crimson" style="font-style:italic; color:var(--muted); font-size:14px; margin-bottom:12px;">
+      Quanto de cada material é necessário para fazer UMA peça.
+    </p>
+
+    <div id="receita-lista" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+    <button type="button" onclick="addLinha()"
+      style="display:block; width:100%; margin-top:10px; padding:12px;
+             background:transparent; border:2px dashed var(--border-dk);
+             border-radius:12px; color:var(--primary); font-weight:700;
+             font-size:15px; cursor:pointer; font-family:inherit;">
+      + Adicionar material à receita
+    </button>
+  </div>
+
+  <div class="ornament" style="margin-bottom:20px;">· · ·</div>
+
+  <button type="submit" class="btn-primary" style="font-size:18px !important; padding:16px;">
+    ✅ Salvar Produto
+  </button>
+</form>
+
+<script>
+const opts = `{% for m in materiais %}<option value="{{ m.id }}">{{ m.nome }} ({{ m.unidade }})</option>{% endfor %}`;
+
+function addLinha() {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex; gap:8px; align-items:center;';
+  row.innerHTML = `
+    <select name="mat_id[]" style="flex:1; padding:12px; border:2px solid var(--border);
+      border-radius:12px; background:var(--card); color:var(--text);
+      font-family:inherit; font-size:15px; outline:none;">
+      <option value="">— Material —</option>${opts}
+    </select>
+    <input name="mat_qtd[]" type="number" min="0.01" step="0.01" placeholder="Qtd"
+      style="width:80px; padding:12px 8px; border:2px solid var(--border); border-radius:12px;
+             background:var(--card); text-align:center; font-weight:700; font-size:16px; outline:none;">
+    <button type="button" onclick="this.parentElement.remove()"
+      style="background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:0 4px;">✕</button>
+  `;
+  document.getElementById('receita-lista').appendChild(row);
+}
+// Inicia com uma linha
+addLinha();
+</script>
+{% endblock %}

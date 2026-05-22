@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% set title = 'Produtos & Receitas' %}
+{% set back_url = url_for('home') %}
+{% set subtitle = 'O que posso produzir agora?' %}
+
+{% block content %}
+
+<div class="ornament" style="margin:8px 0 16px;">· · ·</div>
+
+{% if not producao %}
+<div style="text-align:center; padding:48px 16px;">
+  <p style="font-size:52px;">👜</p>
+  <p class="font-serif" style="font-size:20px; color:var(--text); margin-top:12px;">Nenhum produto ainda.</p>
+  <p class="font-crimson" style="font-style:italic; color:var(--muted); margin-top:6px;">
+    Cadastre um produto com a receita de materiais.
+  </p>
+</div>
+{% endif %}
+
+{% for item in producao %}
+{% set p = item.produto %}
+{% set qtd = item.quantidade_possivel %}
+
+<div class="card" style="margin-bottom:16px; overflow:hidden;">
+
+  {# Faixa de cor por status #}
+  <div style="height:5px; background:{% if qtd == 0 %}var(--danger){% elif qtd <= 2 %}#c17f24{% else %}var(--success){% endif %};"></div>
+
+  <div style="padding:16px;">
+    <div style="display:flex; gap:14px; align-items:flex-start;">
+
+      {# Foto ou ícone #}
+      <div style="width:80px; height:80px; border-radius:14px; overflow:hidden;
+                  background:var(--accent-lt); border:1.5px solid var(--border);
+                  display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        {% if p.foto %}
+        <img src="{{ url_for('static', filename='uploads/' ~ p.foto) }}"
+             alt="{{ p.nome }}" style="width:100%; height:100%; object-fit:cover;">
+        {% else %}
+        <span style="font-size:36px;">👜</span>
+        {% endif %}
+      </div>
+
+      <div style="flex:1; min-width:0;">
+        <p class="font-serif" style="font-size:19px; font-weight:700; color:var(--text); line-height:1.2;">
+          {{ p.nome }}
+        </p>
+        {% if p.preco_venda %}
+        <p class="font-crimson" style="color:var(--accent); font-size:16px; font-style:italic; margin-top:2px;">
+          R$ {{ '%.2f'|format(p.preco_venda) }}
+        </p>
+        {% endif %}
+
+        {# Destaque: quantas pode produzir #}
+        <div style="margin-top:10px; border-radius:12px; padding:10px 14px;
+                    background:{% if qtd == 0 %}var(--danger-lt){% elif qtd <= 2 %}#fff8e8{% else %}#eaf5ec{% endif %};
+                    border:1.5px solid {% if qtd == 0 %}#f3b4b4{% elif qtd <= 2 %}var(--border-dk){% else %}#a3cfbb{% endif %};">
+          <p class="font-serif" style="font-size:17px; font-weight:700;
+             color:{% if qtd == 0 %}var(--danger){% elif qtd <= 2 %}#7a5c00{% else %}var(--success){% endif %};">
+            {% if qtd == 0 %}❌ Material insuficiente
+            {% elif qtd == 1 %}Dá para fazer 1 peça
+            {% else %}Dá para fazer {{ qtd }} peças
+            {% endif %}
+          </p>
+          {% if item.gargalo %}
+          <p class="font-crimson" style="font-size:13px; font-style:italic; margin-top:3px;
+             color:{% if qtd == 0 %}var(--danger){% else %}var(--muted){% endif %};">
+            {% if qtd == 0 %}Falta: {% else %}Limitado por: {% endif %}{{ item.gargalo }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Receita #}
+    {% if p.receita %}
+    <div style="margin-top:14px; border-top:1px dashed var(--border); padding-top:12px;">
+      <p style="font-size:11px; font-weight:700; color:var(--muted); letter-spacing:1px; margin-bottom:8px;">
+        RECEITA POR PEÇA
+      </p>
+      {% for ing in p.receita %}
+      <div style="display:flex; justify-content:space-between; align-items:center;
+                  padding:5px 0; border-bottom:1px solid var(--bg);">
+        <span class="font-crimson" style="color:var(--text); font-size:15px;">{{ ing.get('nome','—') }}</span>
+        <span style="font-weight:700; color:var(--primary); font-size:14px;">
+          {{ ing.quantidade }} {{ ing.get('unidade','') }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('excluir_produto', pid=p.id) }}"
+          onsubmit="return confirm('Remover {{ p.nome }}?')" style="margin-top:10px;">
+      <button style="background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer; padding:0;">
+        🗑️ Remover produto
+      </button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+{# FAB #}
+<a href="{{ url_for('novo_produto') }}"
+   style="position:fixed; bottom:24px; right:20px;
+          width:60px; height:60px; border-radius:50%;
+          background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dk) 100%);
+          color:#fef9f0; font-size:28px; font-weight:700;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:0 4px 16px rgba(92,45,14,.35); text-decoration:none; z-index:40;">
+  +
+</a>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% set title = 'Adicionar Material' %}
+{% set back_url = url_for('home') %}
+{% set subtitle = 'Registrar nova compra' %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+
+  <div class="ornament" style="margin:8px 0 16px;">· · ·</div>
+
+  {# Nome #}
+  <div style="margin-bottom:18px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:14px;">
+      📝 NOME DO MATERIAL
+    </label>
+    <input name="nome" required placeholder="Ex: Mosquetão Dourado 25mm"
+      class="input-vintage" style="font-size:18px !important; font-family:'Playfair Display',serif;">
+  </div>
+
+  {# Categoria #}
+  <div style="margin-bottom:18px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:10px; font-size:14px;">
+      🏷️ CATEGORIA
+    </label>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      {% for cat, emoji in [('Courino','🟫'), ('Metal','⚙️'), ('Aviamento','🧵'),
+                             ('Tecido','🧶'), ('Embalagem','📦'), ('Outros','🔹')] %}
+      <label style="display:flex; align-items:center; gap:10px;
+                    background:var(--card); border:2px solid var(--border);
+                    border-radius:12px; padding:12px 14px; cursor:pointer;"
+             id="lbl-{{ cat }}">
+        <input type="radio" name="categoria" value="{{ cat }}"
+               {% if loop.first %}checked{% endif %}
+               onchange="highlightCat()"
+               style="accent-color:var(--primary); width:18px; height:18px;">
+        <span style="font-size:22px;">{{ emoji }}</span>
+        <span class="font-crimson" style="font-size:16px; color:var(--text);">{{ cat }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Quantidade + Unidade #}
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+    <div>
+      <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:14px;">
+        📏 QUANTIDADE *
+      </label>
+      <input name="quantidade" type="number" min="0" step="0.1" placeholder="Ex: 20" required
+        class="input-vintage" style="text-align:center; font-size:22px !important; font-weight:700;">
+    </div>
+    <div>
+      <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:14px;">
+        📐 UNIDADE
+      </label>
+      <select name="unidade" class="input-vintage">
+        <option>unidades</option>
+        <option>metros</option>
+        <option>rolos</option>
+        <option>kg</option>
+        <option>gramas</option>
+        <option>pares</option>
+        <option>pacotes</option>
+      </select>
+    </div>
+  </div>
+
+  {# Mínimo + Custo #}
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+    <div>
+      <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:14px;">
+        ⚠️ ALERTA MÍNIMO
+      </label>
+      <input name="quantidade_minima" type="number" min="0" step="0.1" placeholder="5" value="5"
+        class="input-vintage" style="text-align:center; font-size:20px !important; font-weight:700;">
+      <p class="font-crimson" style="font-size:12px; color:var(--muted); font-style:italic; margin-top:4px;">
+        Avisa abaixo disso
+      </p>
+    </div>
+    <div>
+      <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:14px;">
+        💰 CUSTO (R$)
+      </label>
+      <input name="custo" type="number" min="0" step="0.01" placeholder="0,00"
+        class="input-vintage" style="text-align:center; font-size:20px !important; font-weight:700;">
+      <p class="font-crimson" style="font-size:12px; color:var(--muted); font-style:italic; margin-top:4px;">
+        Por unidade
+      </p>
+    </div>
+  </div>
+
+  {# Foto #}
+  <div style="margin-bottom:24px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:8px; font-size:14px;">
+      📷 FOTO DO MATERIAL <span style="font-weight:400; color:var(--muted);">(opcional)</span>
+    </label>
+    <label style="display:flex; flex-direction:column; align-items:center; justify-content:center;
+                  height:110px; border:2px dashed var(--border-dk); border-radius:14px;
+                  background:var(--card); cursor:pointer;" id="foto-area">
+      <span style="font-size:32px;" id="foto-icon">📷</span>
+      <span class="font-crimson" style="color:var(--muted); font-style:italic; font-size:14px; margin-top:4px;"
+            id="foto-txt">Toque para adicionar foto</span>
+      <input type="file" name="foto" accept="image/*" capture="environment" style="display:none;"
+             onchange="document.getElementById('foto-icon').textContent='✅';
+                       document.getElementById('foto-txt').textContent=this.files[0]?.name||'Foto selecionada';">
+    </label>
+  </div>
+
+  <div class="ornament" style="margin-bottom:20px;">· · ·</div>
+
+  <button type="submit" class="btn-primary" style="font-size:18px !important; padding:16px;">
+    ✅ Adicionar ao Estoque
+  </button>
+
+</form>
+
+<script>
+function highlightCat() {
+  document.querySelectorAll('[id^="lbl-"]').forEach(el => {
+    const inp = el.querySelector('input[type=radio]');
+    el.style.borderColor = inp.checked ? 'var(--primary)' : 'var(--border)';
+    el.style.background  = inp.checked ? 'var(--accent-lt)' : 'var(--card)';
+  });
+}
+highlightCat();
+document.querySelectorAll('input[name=categoria]').forEach(r => r.addEventListener('change', highlightCat));
+</script>
+{% endblock %}

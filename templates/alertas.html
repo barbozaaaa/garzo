@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% set title = 'Alertas & Relatórios' %}
+{% set back_url = url_for('home') %}
+{% set subtitle = 'Inteligência do ateliê' %}
+
+{% block content %}
+
+<div class="ornament" style="margin:8px 0 16px;">· · ·</div>
+
+{# ── Alertas de estoque ───────────────────────────────────────────────── #}
+{% if alertas %}
+<p style="font-size:11px; font-weight:700; color:var(--danger); letter-spacing:1px; margin-bottom:10px;">
+  🚨 ESTOQUE BAIXO — ATENÇÃO
+</p>
+{% for a in alertas %}
+{% set m = a.material %}
+<div style="background:var(--danger-lt); border:1.5px solid #e8a0a0; border-left:5px solid var(--danger);
+            border-radius:14px; padding:16px; margin-bottom:12px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <p class="font-serif" style="font-size:17px; font-weight:700; color:var(--text);">{{ m.nome }}</p>
+      <p style="color:var(--danger); font-weight:700; margin-top:4px;">
+        Tem: <strong>{{ m.quantidade_atual }} {{ m.unidade }}</strong> ·
+        Mínimo: <strong>{{ m.quantidade_minima }}</strong>
+      </p>
+    </div>
+    <span style="font-size:28px;">⚠️</span>
+  </div>
+  {% if a.dias_restantes is not none %}
+  <p class="font-crimson" style="font-style:italic; color:#9b2335; font-size:14px; margin-top:6px;">
+    Acaba em ~{{ a.dias_restantes }} dia(s) no ritmo atual
+  </p>
+  {% endif %}
+  <a href="{{ url_for('adicionar') }}"
+     style="display:inline-block; margin-top:10px; padding:8px 18px;
+            background:var(--danger); color:#fff; border-radius:10px;
+            font-weight:700; text-decoration:none; font-size:14px;">
+    + Comprar agora
+  </a>
+</div>
+{% endfor %}
+{% else %}
+<div style="background:#eaf5ec; border:1.5px solid #a3cfbb; border-radius:14px;
+            padding:18px 20px; display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+  <span style="font-size:36px;">✅</span>
+  <div>
+    <p class="font-serif" style="font-size:17px; color:var(--success); font-weight:700;">Estoque em dia!</p>
+    <p class="font-crimson" style="font-style:italic; color:var(--muted); font-size:14px;">Nenhum material faltando.</p>
+  </div>
+</div>
+{% endif %}
+
+{# ── Produção possível ────────────────────────────────────────────────── #}
+{% if producao %}
+<div style="height:1px; background:var(--border); margin:20px 0;"></div>
+<p style="font-size:11px; font-weight:700; color:var(--primary); letter-spacing:1px; margin-bottom:12px;">
+  👜 O QUE POSSO PRODUZIR AGORA?
+</p>
+{% for item in producao %}
+{% set qtd = item.quantidade_possivel %}
+<div class="card" style="display:flex; align-items:center; gap:14px; padding:14px 16px; margin-bottom:10px;">
+  <span style="font-size:32px;">👜</span>
+  <div style="flex:1;">
+    <p class="font-serif" style="font-size:16px; font-weight:700; color:var(--text);">{{ item.produto.nome }}</p>
+    <p style="font-weight:700; font-size:15px; margin-top:2px;
+              color:{% if qtd == 0 %}var(--danger){% elif qtd <= 2 %}#7a5c00{% else %}var(--success){% endif %};">
+      {% if qtd == 0 %}Sem material suficiente{% else %}{{ qtd }} peça{{ 's' if qtd > 1 }} possíve{{ 'is' if qtd > 1 else 'l' }}{% endif %}
+    </p>
+    {% if item.gargalo %}
+    <p class="font-crimson" style="font-style:italic; color:var(--muted); font-size:13px; margin-top:2px;">
+      {% if qtd == 0 %}Falta: {% else %}Limite: {% endif %}{{ item.gargalo }}
+    </p>
+    {% endif %}
+  </div>
+  <span class="font-serif" style="font-size:38px; font-weight:800; opacity:.12;
+        color:{% if qtd == 0 %}var(--danger){% else %}var(--success){% endif %};">{{ qtd }}</span>
+</div>
+{% endfor %}
+{% endif %}
+
+{# ── Item mais usado ──────────────────────────────────────────────────── #}
+{% if mais_usado %}
+<div style="height:1px; background:var(--border); margin:20px 0;"></div>
+<p style="font-size:11px; font-weight:700; color:var(--primary); letter-spacing:1px; margin-bottom:12px;">
+  🏆 MATERIAL MAIS USADO
+</p>
+<div class="card" style="display:flex; align-items:center; gap:16px; padding:16px;">
+  <span style="font-size:40px;">🥇</span>
+  <div>
+    <p class="font-serif" style="font-size:18px; font-weight:700; color:var(--text);">{{ mais_usado.material.nome }}</p>
+    <p class="font-crimson" style="font-style:italic; color:var(--muted); font-size:15px; margin-top:2px;">
+      Total consumido: <strong style="color:var(--primary);">{{ mais_usado.total }} {{ mais_usado.material.unidade }}</strong>
+    </p>
+  </div>
+</div>
+{% endif %}
+
+{# ── Gráfico semanal ──────────────────────────────────────────────────── #}
+<div style="height:1px; background:var(--border); margin:20px 0;"></div>
+<p style="font-size:11px; font-weight:700; color:var(--primary); letter-spacing:1px; margin-bottom:12px;">
+  📈 CONSUMO NAS ÚLTIMAS 8 SEMANAS
+</p>
+<div class="card" style="padding:16px;">
+  <canvas id="chart-semanal" height="180"></canvas>
+</div>
+
+{# ── Gráfico categorias ───────────────────────────────────────────────── #}
+{% if consumo_cat != '{}' %}
+<div style="height:1px; background:var(--border); margin:20px 0;"></div>
+<p style="font-size:11px; font-weight:700; color:var(--primary); letter-spacing:1px; margin-bottom:12px;">
+  🍩 CONSUMO POR CATEGORIA
+</p>
+<div class="card" style="padding:16px;">
+  <canvas id="chart-cat" height="220"></canvas>
+</div>
+{% endif %}
+
+{# ── Gráfico top materiais ─────────────────────────────────────────────── #}
+{% if top_mat != '{"labels":[],"totais":[]}' %}
+<div style="height:1px; background:var(--border); margin:20px 0;"></div>
+<p style="font-size:11px; font-weight:700; color:var(--primary); letter-spacing:1px; margin-bottom:12px;">
+  📊 TOP MATERIAIS CONSUMIDOS
+</p>
+<div class="card" style="padding:16px;">
+  <canvas id="chart-top" height="200"></canvas>
+</div>
+{% endif %}
+
+<div class="ornament" style="margin-top:28px;">✦ ✦ ✦</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const CORES = ['#7c3d12','#c17f24','#3a6b47','#8b1a1a','#2c5f8a','#6b4d8a','#5a7a3a'];
+
+Chart.defaults.font.family = "'Crimson Text', serif";
+Chart.defaults.color = '#8b6f55';
+
+const semanal = {{ semanal|safe }};
+const catData = {{ consumo_cat|safe }};
+const topData = {{ top_mat|safe }};
+
+new Chart(document.getElementById('chart-semanal'), {
+  type: 'line',
+  data: {
+    labels: semanal.labels,
+    datasets: [{
+      label: 'Consumo',
+      data: semanal.totais,
+      borderColor: '#7c3d12',
+      backgroundColor: 'rgba(124,61,18,.1)',
+      fill: true,
+      tension: 0.45,
+      pointBackgroundColor: '#c17f24',
+      pointRadius: 5,
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' } },
+              x: { grid: { display: false } } }
+  }
+});
+
+if (Object.keys(catData).length) {
+  new Chart(document.getElementById('chart-cat'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(catData),
+      datasets: [{ data: Object.values(catData), backgroundColor: CORES, borderWidth: 3, borderColor: '#fffdf7' }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+if (topData.labels.length) {
+  new Chart(document.getElementById('chart-top'), {
+    type: 'bar',
+    data: {
+      labels: topData.labels,
+      datasets: [{ label: 'Consumido', data: topData.totais, backgroundColor: CORES, borderRadius: 8 }]
+    },
+    options: {
+      responsive: true,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' } },
+                y: { grid: { display: false } } }
+    }
+  });
+}
+</script>
+{% endblock %}

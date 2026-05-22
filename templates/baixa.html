@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% set title = 'Dar Baixa' %}
+{% set back_url = url_for('home') %}
+{% set subtitle = 'Registrar uso de material' %}
+
+{% block content %}
+<form method="post">
+
+  <div class="ornament" style="margin:8px 0 16px;">· · ·</div>
+
+  {# Seleção do material #}
+  <div style="margin-bottom:20px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:8px; font-size:14px;">
+      📦 QUAL MATERIAL FOI USADO?
+    </label>
+    <select name="material_id" id="sel-mat" onchange="atualizarInfo()" required class="input-vintage"
+            style="font-size:17px !important; font-family:'Crimson Text',serif;">
+      <option value="">— Escolha um material —</option>
+      {% for m in materiais %}
+      <option value="{{ m.id }}" data-qtd="{{ m.quantidade_atual }}" data-unid="{{ m.unidade }}"
+              {% if request.args.get('mid') == m.id %}selected{% endif %}>
+        {{ m.nome }}  ·  {{ m.quantidade_atual }} {{ m.unidade }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {# Info do estoque atual #}
+  <div id="info-box" style="display:none; background:var(--accent-lt); border:1.5px solid var(--accent);
+       border-radius:12px; padding:14px 16px; margin-bottom:20px; text-align:center;">
+    <p class="font-crimson" style="color:var(--primary); font-size:16px; font-style:italic;">
+      Estoque atual
+    </p>
+    <p class="font-serif" style="font-size:32px; font-weight:700; color:var(--primary); line-height:1.2;">
+      <span id="qtd-atual">—</span>
+      <span id="unid-atual" style="font-size:18px; font-weight:400;"></span>
+    </p>
+  </div>
+
+  {# Quantidade usada #}
+  <div style="margin-bottom:20px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:8px; font-size:14px;">
+      📏 QUANTO FOI USADO?
+    </label>
+    <input name="quantidade" type="number" min="0.01" step="0.01" placeholder="0" required
+      class="input-vintage" id="inp-qtd"
+      style="text-align:center; font-size:36px !important; font-weight:800; color:var(--primary); height:80px;">
+    <p class="font-crimson" style="text-align:center; color:var(--muted); font-style:italic; margin-top:6px;"
+       id="label-unid"> </p>
+  </div>
+
+  {# Motivo #}
+  <div style="margin-bottom:24px;">
+    <label style="display:block; font-weight:700; color:var(--primary); margin-bottom:10px; font-size:14px;">
+      💬 MOTIVO
+    </label>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      {% for motivo in ['Produção de bolsa', 'Produção de nécessaire', 'Amostra / Teste', 'Desperdício', 'Devolução', 'Outro'] %}
+      <label style="display:flex; align-items:center; gap:8px; background:var(--card);
+                    border:2px solid var(--border); border-radius:12px; padding:10px 12px; cursor:pointer;">
+        <input type="radio" name="motivo" value="{{ motivo }}" style="accent-color:var(--primary); width:16px; height:16px;">
+        <span class="font-crimson" style="font-size:14px; color:var(--text);">{{ motivo }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ornament" style="margin-bottom:20px;">· · ·</div>
+
+  <button type="submit" class="btn-primary" style="font-size:18px !important; padding:16px;
+          background:linear-gradient(135deg,var(--danger) 0%,#6b1212 100%);">
+    ✂️ Registrar Baixa
+  </button>
+
+</form>
+
+<script>
+function atualizarInfo() {
+  const sel = document.getElementById('sel-mat');
+  const opt = sel.options[sel.selectedIndex];
+  const box = document.getElementById('info-box');
+  if (!opt.value) { box.style.display = 'none'; return; }
+  document.getElementById('qtd-atual').textContent  = opt.dataset.qtd;
+  document.getElementById('unid-atual').textContent = ' ' + opt.dataset.unid;
+  document.getElementById('label-unid').textContent = opt.dataset.unid;
+  box.style.display = 'block';
+}
+window.addEventListener('load', atualizarInfo);
+</script>
+{% endblock %}
