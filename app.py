@@ -9,8 +9,9 @@ import analytics
 app = Flask(__name__)
 app.secret_key = 'atelie-haiti-2026'
 
-DATA_DIR    = os.path.join(os.path.dirname(__file__), 'data')
-UPLOAD_DIR  = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
+_IS_VERCEL  = os.environ.get('VERCEL')
+DATA_DIR    = '/tmp/data'    if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'data')
+UPLOAD_DIR  = '/tmp/uploads' if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'static', 'uploads')
 ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 
 os.makedirs(DATA_DIR,   exist_ok=True)
@@ -273,6 +274,7 @@ def alertas():
 
 # ─── Start ────────────────────────────────────────────────────────────────────
 
+seed_inicial()
+
 if __name__ == '__main__':
-    seed_inicial()
     app.run(debug=True, host='0.0.0.0', port=5000)
